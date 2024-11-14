@@ -1,10 +1,10 @@
 {
-    "name" : "DynTextWid",
+    "name": "DynText",
     "description" : "A widget for your top bar, which lets you write a string and update it through your terminal.",
     "shell-version" : [
-        "3.36"
+        "43"
     ],
     "url" : "",
-    "uuid" : "example1@example.com",
-    "version" : 1.0
+    "uuid": "dyntext@azubi",
+    "version": 1.0
 }
