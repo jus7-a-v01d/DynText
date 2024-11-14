@@ -12,14 +12,20 @@ function label() {
         // read file content
         let [success, content] = TextStore.load_contents(null);
 
+        // check for multiple newlines
+        let content_newline = content.toString().trimEnd();
+        if (JSON.stringify(content_newline).includes("\\n")) {
+            throw new Error("File contains multiple lines.")
+        }
+
         // add spaces before and after text, for prettier padding in button
         if (!success) {
             text = " Hello, World! ";
         } else {
-            //text = " " + content.toString().trim() + " ";
             text = " " + content.toString().trim() + " "
         }
     } catch (e) {
+        Main.notify("DynText Error", "Error reading file show_this.txt: " + e);
         log("Error reading file show_this.txt: " + e);
     }
 
