@@ -2,11 +2,11 @@ const { St, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const Gio = imports.gi.Gio;
 
-let TextStore = Gio.File.new_for_path("./show_this.txt");
 let panelButton;
 
-function read_text_from_file() {
-    let text = " Could not read file :( ";
+function label() {
+    let TextStore = Gio.File.new_for_path(".dyntext_config.txt");
+    let text = " Could not read file '.dyntext_config.txt' ";
 
     try {
         // read file content
@@ -17,17 +17,11 @@ function read_text_from_file() {
             text = " Hello, World! ";
         } else {
             //text = " " + content.toString().trim() + " ";
-            text = " AAAAA "
+            text = " " + content.toString().trim() + " "
         }
     } catch (e) {
         log("Error reading file show_this.txt: " + e);
     }
-
-    return text;
-}
-
-function label() {
-    let text = read_text_from_file();
 
     return new St.Label({
         text: text,
