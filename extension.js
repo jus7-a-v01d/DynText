@@ -1,10 +1,13 @@
-const { St, Clutter } = imports.gi;
+const { St, Clutter, Gio, GLib } = imports.gi;
 const Main = imports.ui.main;
-const Gio = imports.gi.Gio;
+const Mainloop = imports.mainloop;
 
 let panelButton;
+let timeout;
+let timer_sec;
+let panelLabel;
 
-function label() {
+function get_text() {
     let TextStore = Gio.File.new_for_path(".dyntext_config.txt");
     let text = " Could not read file '.dyntext_config.txt' ";
 
@@ -14,7 +17,7 @@ function label() {
 
         // check for multiple newlines
         let content_newline = content.toString().trimEnd();
-        if (JSON.stringify(content_newline).includes("\\n")) {
+        if (content_newline.includes("\n")) {
             throw new Error("File contains multiple lines.")
         }
 
@@ -22,17 +25,32 @@ function label() {
         if (!success) {
             text = " Hello, World! ";
         } else {
-            text = " " + content.toString().trim() + " "
+            text = ` ${content.toString().trim()} `
+            // text = " " + content.toString().trim() + " "
         }
+
     } catch (e) {
-        Main.notify("DynText Error", "Error reading file show_this.txt: " + e);
-        log("Error reading file show_this.txt: " + e);
+        Main.notify("DynText Error", "Error reading config: " + e);
+        log("Error reading config: " + e);
     }
 
-    return new St.Label({
-        text: text,
-        y_align: Clutter.ActorAlign.CENTER,
-    });
+    return text;
+}
+
+function update_label() {
+    const txt = get_text();
+
+    // check for changes of text
+    panelLabel.text = txt;
+
+    // setup mainloop with interval of timer_sec
+    if (timer_sec > 0) {
+        timeout = Mainloop.timeout_add_seconds(timer_sec, update_label);
+    } else {
+        Main.notify("DynText hint", "No timer set or timer invalid.");
+        Main.notify("Timer: " + timer_sec.toString());
+        //exit
+    }
 }
 
 function init() {
@@ -42,18 +60,33 @@ function init() {
     });
 
     // get and set text
-    panelButton.set_child(label());
+    panelLabel = new St.Label({
+        text: "fester Text",
+        y_align: Clutter.ActorAlign.CENTER,
+    });
+
+    panelButton.set_child(panelLabel);
 }
 
 function enable() {
-    // check for changes of text
-    panelButton.set_child(label());
-
-    // Add the button to the panel
     Main.panel._rightBox.insert_child_at_index(panelButton, 0);
+
+    // read the timer env var
+    let Timer = GLib.getenv('DYNTEXT_TIMER_SEC');
+
+    // set timer and update label text
+    timer_sec = 30;
+    update_label();
 }
 
 function disable() {
     // Remove the added button from panel
     Main.panel._rightBox.remove_child(panelButton);
+
+    // remove mainloop if it was set
+    if (timeout) {
+        Mainloop.source_remove(timeout);
+        timeout = null;
+    }
 }
+
