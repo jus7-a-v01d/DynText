@@ -4,36 +4,42 @@ A customizable text-widget for your top bar.
 ## What makes it special?
 - There is **no GUI**.
     - The text can be modified through a terminal or a text editor of your choice.
-- Use it for a **static or semi-dynamic** display of text
-    - Specify a timer for DynText to look for changes in your text.
-    - Omit the timer, and DynText will not automatically look for changes.
-    > DynText will not automatically update it's text source, you have to do this yourself.
-- Display anything you can write in **one line** of a file
+- Display anything you can write in **one line** of a file on your top bar
     - The only size limitation is the length of your top bar.
+- Display anything larger than one line in a **popup-menu**
+    - Anything written after the first line will be put in a popup menu, activated by pressing the widget.
+- Periodic **updates**
+    - Every 30 seconds the DynText widget will check your text-source again and update itself.
+    > The duration between each update will be customizable in the future.
+
 
 ## Installation
 Coming soon...
 
+> Note: if you also want to skip the GUI when enabling / disabling DynText, use these commands:
+```bash
+gnome-extensions enable dyntext@azubi
+gnome-extensions disable dyntext@azubi
+```
+
 ## To show text
-### Static
-There are only two steps, if you simply want to display a static text on your top bar.
-1. create the config file
-```bash
-touch ~/.dyntext_config.txt
-```
+### Top bar widget
+- create the config file
+    ```bash
+    touch ~/.dyntext_config.txt
+    ```
 
-2. put some text in your config file
-```bash
-# alternatively, you can use a text editor of your choice for this step
-echo "This text will be shown!" > ~/.dyntext_config.txt
-```
+- put some text in your config file
+    ```bash
+    # alternatively, you can use a text editor of your choice for this step
+    echo "This text will be shown!" > ~/.dyntext_config.txt
+    ```
 
-### Dynamic (periodic updates)
-[not yet implemented]
-
-### Notes
-- The config file may only contain one line of text, as the widget cannot display multiple lines.
-- I have not set a limit on how many characters that line can have, you may however be limited by the size of your top bar
+### Popup menu
+- append text to your config file
+    ```bash
+    echo "This will\nshow up\nas multiple\nlines!" >> ~/.dyntext_config.txt
+    ```
 
 ## If this is not what you're looking for...
 This extension was inspired by the following repositories, maybe you will find something there:
