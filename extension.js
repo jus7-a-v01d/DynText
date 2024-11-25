@@ -1,47 +1,83 @@
-const { St, Clutter, Gio, GLib } = imports.gi;
-const Main = imports.ui.main;
+const { St, Gio, Clutter, GObject, GLib } = imports.gi;
 const Mainloop = imports.mainloop;
+const Main = imports.ui.main;
+const PanelMenu = imports.ui.panelMenu;
+const PopupMenu = imports.ui.popupMenu;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-let panelButton;
+
+let myPopup;
+let ButtonLabel;
+let PopupItem;
+
 let timeout;
 let timer_sec;
-let panelLabel;
 
-function get_text() {
-    let TextStore = Gio.File.new_for_path(".dyntext_config.txt");
-    let text = " Could not read file '.dyntext_config.txt' ";
+const MyPopup = GObject.registerClass(
+    class MyPopup extends PanelMenu.Button {
 
-    try {
-        // read file content
-        let [success, content] = TextStore.load_contents(null);
+        _init() {
+            super._init(0);
 
-        // check for multiple newlines
-        let content_newline = content.toString().trimEnd();
-        if (content_newline.includes("\n")) {
-            throw new Error("File contains multiple lines.")
+            // get and set text for button
+            const texts = get_text();
+
+            let label_text = texts[0];
+            let menu_text = texts[1];
+
+            ButtonLabel = new St.Label({
+                text: label_text,
+                y_align: Clutter.ActorAlign.CENTER,
+            });
+
+            PopupItem = new PopupMenu.PopupMenuItem(
+                menu_text,
+                {
+                    reactive: false,
+                    style_class: 'PopupMenuFont',
+                },
+            )
+
+            // add button to top bar
+            this.add_child(ButtonLabel);
+
+
+            // add menu to button
+            this.menu.addMenuItem(PopupItem);
         }
+    });
 
-        // add spaces before and after text, for prettier padding in button
-        if (!success) {
-            text = " Hello, World! ";
-        } else {
-            text = ` ${content.toString().trim()} `
-            // text = " " + content.toString().trim() + " "
-        }
+function init() {
+}
 
-    } catch (e) {
-        Main.notify("DynText Error", "Error reading config: " + e);
-        log("Error reading config: " + e);
+function enable() {
+    myPopup = new MyPopup();
+
+    // set timer, update label and display
+    timer_sec = 30;
+    update_label();
+    Main.panel.addToStatusArea('myPopup', myPopup, 1);
+}
+
+function disable() {
+    myPopup.destroy();
+
+    // remove mainloop if it was set
+    if (timeout) {
+        Mainloop.source_remove(timeout);
+        timeout = null;
     }
-
-    return text;
 }
 
 function update_label() {
-    const txt = get_text();
+    log("[DynText] Updating label...");
+    const texts = get_text();
 
-    // check for changes of text
-    panelLabel.text = txt;
+    let label_text = texts[0];
+    let menu_text = texts[1];
+
+    ButtonLabel.text = label_text;
+    PopupItem.label.text = menu_text;
 
     // setup mainloop with interval of timer_sec
     if (timer_sec > 0) {
@@ -53,40 +89,38 @@ function update_label() {
     }
 }
 
-function init() {
-    // Create a Button with "Hello World" text
-    panelButton = new St.Bin({
-        style_class: "panel-button",
-    });
+function get_text() {
+    let TextStore = Gio.File.new_for_path(".dyntext_config.txt");
+    let title = " Could not read file '.dyntext_config.txt' ";
+    let text = "Nothing to see here.";
 
-    // get and set text
-    panelLabel = new St.Label({
-        text: "fester Text",
-        y_align: Clutter.ActorAlign.CENTER,
-    });
+    try {
+        // read file content
+        let [success, content] = TextStore.load_contents(null);
 
-    panelButton.set_child(panelLabel);
-}
+        // check for multiple newlines
+        let content_newline = content.toString().trimEnd();
+        if (content_newline.includes("\n")) {
+            let lines = content.toString().split('\n');
 
-function enable() {
-    Main.panel._rightBox.insert_child_at_index(panelButton, 0);
+            // parse content
+            title = lines[0];
+            text = lines.splice(1).join('\n');
+        } else {
+            // add spaces before and after text, for prettier padding in button
+            if (!success) {
+                title = " Hello, World! ";
+            } else {
+                title = ` ${content.toString().trim()} `
+                // text = " " + content.toString().trim() + " "
+            }
+        }
 
-    // read the timer env var
-    let Timer = GLib.getenv('DYNTEXT_TIMER_SEC');
 
-    // set timer and update label text
-    timer_sec = 30;
-    update_label();
-}
-
-function disable() {
-    // Remove the added button from panel
-    Main.panel._rightBox.remove_child(panelButton);
-
-    // remove mainloop if it was set
-    if (timeout) {
-        Mainloop.source_remove(timeout);
-        timeout = null;
+    } catch (e) {
+        Main.notify("DynText Error", "Error reading config: " + e);
+        log("Error reading config: " + e);
     }
-}
 
+    return [title, text];
+}
