@@ -41,6 +41,19 @@ gnome-extensions disable dyntext@azubi
     echo "This will\nshow up\nas multiple\nlines!" >> ~/.dyntext_config.txt
     ```
 
+    This will then result in a layout like this:
+    ```
+    -----------
+    |This will|       <- Button
+    -----------
+    ------------------
+    | show up        |
+    | as multiple    |   <- Popup
+    | lines!         |
+    ------------------
+    ```
+
+
 ## If this is not what you're looking for...
 This extension was inspired by the following repositories, maybe you will find something there:
 - https://github.com/Guleri24/show-me-the-text.git
