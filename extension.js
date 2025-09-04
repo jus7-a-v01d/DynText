@@ -65,6 +65,11 @@ export default class DynTextExtension {
     }
 
     _update_label() {
+        if (this._timeout) {
+            GLib.source_remove(this._timeout);
+            this._timeout = null;
+        }
+
         if (this._myPopup)
             this._myPopup.updateTexts();
 
@@ -74,7 +79,7 @@ export default class DynTextExtension {
                 this._timer_sec,
                 () => {
                     this._update_label();
-                    return GLib.SOURCE_CONTINUE;
+                    return true; // return true to continue, false to stop
                 }
             );
         }
