@@ -18,8 +18,8 @@ Coming soon...
 
 > Note: if you also want to skip the GUI when enabling / disabling DynText, use these commands:
 ```bash
-gnome-extensions enable dyntext@azubi
-gnome-extensions disable dyntext@azubi
+gnome-extensions enable DynText@jus7-a-v01d
+gnome-extensions disable DynText@jus7-a-v01d
 ```
 
 ## To show text
